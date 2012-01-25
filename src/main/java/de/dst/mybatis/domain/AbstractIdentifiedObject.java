@@ -1,8 +1,11 @@
 package de.dst.mybatis.domain;
 
+import java.io.Serializable;
+
 
 @SuppressWarnings("serial")
-public class AbstractIdentifiedObject implements IdentifiedObject {
+public abstract class AbstractIdentifiedObject implements IdentifiedObject,
+		Serializable {
 	protected String id;
 
 	public String getId() {

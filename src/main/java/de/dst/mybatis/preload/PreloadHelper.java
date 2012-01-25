@@ -9,8 +9,6 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.dst.mybatis.domain.IdentifiedObject;
-
 /**
  * Injected into services in order to preload dependent entities according to
  * given preload rules.
@@ -19,7 +17,7 @@ import de.dst.mybatis.domain.IdentifiedObject;
 public class PreloadHelper {
 
 	@Autowired
-	ServiceProvider serviceProvider;
+	PreloadService serviceProvider;
 
 	/**
 	 * Preload proxied dependent entities.
@@ -117,15 +115,23 @@ public class PreloadHelper {
 
 		} else {
 
-			if (entity instanceof IdentifiedObject) {
-				// todo Jetzt werden die Entities auch korrekt beim Preloading
-				// gesetzt
-				// falls irgend ein anderes (prezuloadendes) Proxy-Entity darauf
-				// "stößt"... Funktioniert leider nur für RPlanObject-Entities -
-				// andere Möglichkeit wäre (analog) zu den Proxy-Obj.
-				// "id-getter-Funktionsname" zu übergeben :-(
-				IdentifiedObject rpo = (IdentifiedObject) entity;
-				alreadyLoadedEntities.put(rpo.getId(), rpo);
+			// if (entity instanceof IdentifiedObject) {
+			// // todo Jetzt werden die Entities auch korrekt beim Preloading
+			// // gesetzt
+			// // falls irgend ein anderes (prezuloadendes) Proxy-Entity darauf
+			// // "stößt"... Funktioniert leider nur für
+			// // IdentifiedObject-Entities -
+			// // andere Möglichkeit wäre (analog) zu den Proxy-Obj.
+			// // "id-getter-Funktionsname" zu übergeben :-(
+			// IdentifiedObject rpo = (IdentifiedObject) entity;
+			// alreadyLoadedEntities.put(rpo.getId(), rpo);
+			// }
+			String idProperty = serviceProvider
+					.getIdPropertyForEntityClass(entity.getClass());
+			if (idProperty != null) {
+
+				alreadyLoadedEntities.put(PreloadAccessor
+						.getPropertyFromEntity(entity, idProperty), entity);
 			}
 
 			// crucial part: Search for preloads matching entity's class and
@@ -209,9 +215,7 @@ public class PreloadHelper {
 		PreloadAccessor[] ret = new PreloadAccessor[preloads.length];
 		for (int i = 0; i < preloads.length; i++) {
 			Preload p = preloads[i];
-			ret[i] = new PreloadAccessor(p,
-					serviceProvider.getServiceInstance(p.getPreloadFindMethod()
-							.getFinderServiceName()));
+			ret[i] = new PreloadAccessor(p, serviceProvider);
 		}
 		return ret;
 	}

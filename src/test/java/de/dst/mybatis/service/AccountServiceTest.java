@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import de.dst.mybatis.domain.Account;
 import de.dst.mybatis.domain.AccountField;
+import de.dst.mybatis.domain.Ghost;
 import de.dst.mybatis.domain.Signon;
 import de.dst.mybatis.domain.SignonGhost;
 import de.dst.mybatis.preload.Preload;
@@ -42,7 +43,7 @@ public class AccountServiceTest {
 	public void loadSignonByUsername() {
 		Signon signon = accountService.getSignonByUsername("j2ee");
 		Assert.assertNotNull(signon);
-		Assert.assertFalse(signon instanceof SignonGhost);
+		Assert.assertFalse(signon instanceof Ghost);
 		logger.debug("loaded Account: " + signon.toString());
 	}
 
@@ -58,11 +59,24 @@ public class AccountServiceTest {
 	public void preloadSignon() {
 
 		PreloadFindMethod preloadFindMethod = new PreloadFindMethod(
-				"accountService", "getSignon", String.class, "id");
+				"accountService", "getSignon", String.class);
 		Preload preload = new Preload(Account.class, "signon",
 				preloadFindMethod);
 		Account account = accountService.getAccount("j2ee", preload);
 		Validate.notNull(account.getSignon());
-		Assert.assertFalse(account.getSignon() instanceof SignonGhost);
+		Assert.assertFalse(account.getSignon() instanceof Ghost);
+	}
+
+	@Test
+	public void preloadExtraFields() {
+
+		PreloadFindMethod preloadFindMethod = new PreloadFindMethod(
+				"accountService", "getExtraFields", String.class);
+		Preload preload = new Preload(Account.class, "extraFields",
+				preloadFindMethod);
+		Account account = accountService.getAccount("j2ee", preload);
+		List<AccountField> extraFields = account.getExtraFields();
+		Validate.notEmpty(extraFields);
+		Assert.assertFalse(extraFields instanceof Ghost);
 	}
 }

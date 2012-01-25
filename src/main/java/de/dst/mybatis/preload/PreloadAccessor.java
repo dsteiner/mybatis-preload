@@ -49,12 +49,21 @@ class PreloadAccessor {
 	 */
 	private final boolean finderMethodIsBulkLoading;
 
-	public PreloadAccessor(final Preload preload, final Object serviceInstance) {
+	private final PreloadService serviceProvider;
+
+	public PreloadAccessor(final Preload preload,
+			PreloadService serviceProvider) {
+		this.serviceProvider = serviceProvider;
+
+		PreloadFindMethod preloadFindMethod = preload.getPreloadFindMethod();
+		Object serviceInstance = serviceProvider
+				.getServiceInstance(preloadFindMethod.getFinderServiceName());
+
 		this.preloadDefinition = preload;
 		this.serviceInstance = serviceInstance;
-		this.finderMethod = searchFinderMethod(preload.getPreloadFindMethod()
-				.getFinderMethodName(), preload.getPreloadFindMethod()
-				.getFinderMethodArgClass());
+		this.finderMethod = searchFinderMethod(
+				preloadFindMethod.getFinderMethodName(),
+				preloadFindMethod.getFinderMethodArgClass());
 		this.finderMethodIsBulkLoading = initFinderMethodIsBulkLoading(finderMethod);
 		this.finderMethodArgClass = finderMethod.getParameterTypes()[0];
 	}
@@ -174,11 +183,10 @@ class PreloadAccessor {
 			Method finderMethod = getFinderMethod();
 			Object finderArg = getFinderArg(entity, proxyEntity);
 			if (finderMethod.getParameterTypes().length == 1) {
-				return finderMethod.invoke(getServiceInstance(),
-						finderArg);
+				return finderMethod.invoke(getServiceInstance(), finderArg);
 			} else {
-				return finderMethod.invoke(getServiceInstance(),
-						finderArg, null);
+				return finderMethod.invoke(getServiceInstance(), finderArg,
+						null);
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(this.toString(), ex);
@@ -193,17 +201,31 @@ class PreloadAccessor {
 	 * @return argument of finder
 	 */
 	private Object getFinderArg(final Object entity, final Object proxyEntity) {
-		if (preloadDefinition.getPreloadFindMethod()
-				.getProxiedEntityIdProperty() == null) {
-			if (entity != null
-					&& entity.getClass().equals(getFinderMethodArgClass())) {
-				return entity;
-			} else if (proxyEntity != null
-					&& proxyEntity.getClass().equals(getFinderMethodArgClass())) {
-				return proxyEntity;
+
+		// CAN be either a 1:n relation or Id of the
+		// proxy was not set
+		if (proxyEntity == null) {
+			// this MUST be an error!!!
+			if (entity == null) {
+				throw new RuntimeException(
+						"internal error: proxyEntity is null AND entity is null");
 			}
+
+			if (entity.getClass().equals(getFinderMethodArgClass())) {
+				return entity;
+			}
+			Object entityId = getEntityId(entity);
+			if (entityId != null) {
+				return entityId;
+			}
+
+		} else if (proxyEntity.getClass().equals(getFinderMethodArgClass())) {
+			return proxyEntity;
 		} else {
-			return getProxyEntityId(proxyEntity);
+			Object proxyEntityId = getEntityId(proxyEntity);
+			if (proxyEntityId != null) {
+				return proxyEntityId;
+			}
 		}
 		throw new RuntimeException("Couldn't resolve argument for finder");
 	}
@@ -211,20 +233,29 @@ class PreloadAccessor {
 	/**
 	 * Return ID value of proxied entity.
 	 * 
-	 * @param proxiedEntity
+	 * @param anyEntity
 	 *            proxied entity, i.e. only populated with ID.
 	 * @return ID value of proxied entity
 	 */
-	public Object getProxyEntityId(final Object proxiedEntity) {
-		if (preloadDefinition.getPreloadFindMethod()
-				.getProxiedEntityIdProperty() == null || proxiedEntity == null) {
+	public Object getEntityId(final Object anyEntity) {
+		if (anyEntity == null)
+			return null;
+		String anyEntityIdProperty = serviceProvider
+				.getIdPropertyForEntityClass(anyEntity.getClass());
+		if (anyEntityIdProperty == null) {
 			return null;
 		}
+		return getPropertyFromEntity(anyEntity, anyEntityIdProperty);
+	}
+
+	public static Object getPropertyFromEntity(final Object proxiedEntity,
+			String proxiedEntityIdProperty) {
 		try {
-			return PropertyUtils.getProperty(proxiedEntity, preloadDefinition
-					.getPreloadFindMethod().getProxiedEntityIdProperty());
+			return PropertyUtils.getProperty(proxiedEntity,
+					proxiedEntityIdProperty);
 		} catch (Exception e) {
-			throw new RuntimeException(this.toString(), e);
+			throw new RuntimeException("Property '" + proxiedEntityIdProperty
+					+ "' not found in entity: " + proxiedEntity, e);
 		}
 	}
 
@@ -268,7 +299,7 @@ class PreloadAccessor {
 			for (Object entity : entities) {
 				Object proxyEntity = invokeGetter(entity);
 				Object proxyId = proxyEntity == null ? null
-						: getProxyEntityId(proxyEntity);
+						: getEntityId(proxyEntity);
 				Object preloadedEntity;
 				if (alreadyLoadedEntities.containsKey(proxyId)) {
 					preloadedEntity = alreadyLoadedEntities.get(proxyId);
@@ -303,7 +334,7 @@ class PreloadAccessor {
 		Map<Object, Object> entityRepository = makeEntityRepository(preloadEntities);
 		for (Object entity : entities) {
 			Object proxyEntity = invokeGetter(entity);
-			Object proxyId = getProxyEntityId(proxyEntity);
+			Object proxyId = getEntityId(proxyEntity);
 			Object loadedEntity;
 			if (alreadyLoadedEntities.containsKey(proxyId)) {
 				loadedEntity = alreadyLoadedEntities.get(proxyId);
@@ -328,7 +359,7 @@ class PreloadAccessor {
 		Map<Object, Object> retMap = new HashMap<Object, Object>(
 				preloadEntities.size());
 		for (Object preloadedEntity : preloadEntities) {
-			Object id = getProxyEntityId(preloadedEntity);
+			Object id = getEntityId(preloadedEntity);
 			retMap.put(id, preloadedEntity);
 		}
 		return retMap;
@@ -388,7 +419,7 @@ class PreloadAccessor {
 
 		for (Object entity : entities) {
 			Object proxyEntity = invokeGetter(entity);
-			Object id = getProxyEntityId(proxyEntity);
+			Object id = getEntityId(proxyEntity);
 			if (id != null && !alreadyLoadedEntities.containsKey(id)) {
 				iDs.add(id);
 			}

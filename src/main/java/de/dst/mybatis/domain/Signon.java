@@ -1,5 +1,6 @@
 package de.dst.mybatis.domain;
 
+
 public interface Signon extends IdentifiedObject {
 	public String getUsername();
 

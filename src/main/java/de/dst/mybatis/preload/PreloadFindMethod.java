@@ -26,25 +26,17 @@ public class PreloadFindMethod implements Serializable {
 	 */
 	private final Class<?> finderMethodArgClass;
 
-	/**
-	 * Name of property holding primary key (ID) of proxied entity. May be null.
-	 */
-	private final String proxiedEntityIdProperty;
-
 	public PreloadFindMethod(final String finderServiceName,
-			final String finderMethodName, final Class<?> finderMethodArgClass,
-			final String proxiedEntityIdProperty) {
+			final String finderMethodName, final Class<?> finderMethodArgClass) {
 		this.finderServiceName = finderServiceName;
 		this.finderMethodName = finderMethodName;
 		this.finderMethodArgClass = finderMethodArgClass;
-		this.proxiedEntityIdProperty = proxiedEntityIdProperty;
 	}
 
 	@Override
 	public String toString() {
 		return "PreloadFindMethod: finderServiceName=" + finderServiceName
-				+ " finderMethodName=" + finderMethodName
-				+ " proxyEntityIdProperty=" + proxiedEntityIdProperty;
+				+ " finderMethodName=" + finderMethodName;
 	}
 
 	public String getFinderServiceName() {
@@ -58,9 +50,5 @@ public class PreloadFindMethod implements Serializable {
 
 	public String getFinderMethodName() {
 		return finderMethodName;
-	}
-
-	public String getProxiedEntityIdProperty() {
-		return proxiedEntityIdProperty;
 	}
 }

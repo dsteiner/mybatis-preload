@@ -1,6 +1,10 @@
 package de.dst.mybatis.domain;
 
-public class SignonGhost extends AbstractIdentifiedObject implements Signon {
+
+public class SignonGhost extends AbstractIdentifiedObject implements Signon,
+		Ghost {
+
+	private static final long serialVersionUID = 1L;
 
 	private void throwGhostException() {
 		throw new GhostException(

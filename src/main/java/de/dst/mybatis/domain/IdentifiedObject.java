@@ -1,8 +1,7 @@
 package de.dst.mybatis.domain;
 
-import java.io.Serializable;
 
-public interface IdentifiedObject extends Serializable {
+public interface IdentifiedObject {
 
 	public String getId();
 

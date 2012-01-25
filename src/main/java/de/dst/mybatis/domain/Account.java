@@ -15,6 +15,10 @@ public class Account extends AbstractIdentifiedObject {
 
 	private List<AccountField> extraFields;
 
+	public void setExtraFields(List<AccountField> extraFields) {
+		this.extraFields = extraFields;
+	}
+
 	public Signon getSignon() {
 		return signon;
 	}

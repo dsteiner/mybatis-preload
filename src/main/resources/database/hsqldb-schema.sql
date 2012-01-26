@@ -18,12 +18,20 @@ create table account (
         references signon (id)
 );
 
+create table field_type (
+    id varchar(37) not null,
+    pattern varchar(8),
+    constraint pk_field_type primary key (id)
+);
+
 
 create table account_field (
     id varchar(37) not null,
     accountId varchar(37) not null,
-    type int not null,
+    typeId varchar(37) not null,
     text varchar(80) null,
-    constraint pk_account_field primary key (id)
+    constraint pk_account_field primary key (id),
+    constraint fk_fieldTypeId foreign key (typeId)
+        references field_type (id)
 );
 

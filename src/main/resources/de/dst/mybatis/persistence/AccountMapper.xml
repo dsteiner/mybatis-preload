@@ -14,9 +14,17 @@
 		<association property="signon" column="signonid" javaType="SignonGhost">
 			<id property="id" column="signonid" />
 		</association>
+
 	</resultMap>
 
+	<resultMap type="AccountField" id="accountFieldResult">
+		<id property="id" column="id" />
+		<result property="text" column="text" />
+		<association property="type" column="typeId" javaType="FieldTypeGhost">
+			<id property="id" column="typeId" />
+		</association>
 
+	</resultMap>
 
 	<select id="getAccountByUsername" resultMap="accountResult">
 		SELECT
@@ -52,14 +60,22 @@
 	</select>
 
 	<select id="getAccountFieldsByAccountId" parameterType="string"
-		resultType="AccountField">
+		resultMap="accountFieldResult">
 		SELECT
 		ID,
-		type,
+		typeId,
 		text
 		FROM account_field
 		WHERE accountId =
 		#{refId}
+	</select>
+	
+	<select id="getFieldType" parameterType="string" resultType="FieldTypeImpl">
+		select
+			id,
+			pattern
+		from field_type
+		where id = #{id}
 	</select>
 
 </mapper>

@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import de.dst.mybatis.domain.Account;
 import de.dst.mybatis.domain.AccountField;
+import de.dst.mybatis.domain.FieldType;
 import de.dst.mybatis.domain.Ghost;
 import de.dst.mybatis.domain.Signon;
 import de.dst.mybatis.domain.SignonGhost;
@@ -27,6 +28,14 @@ public class AccountServiceTest {
 	AccountService accountService;
 
 	Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Test
+	public void loadFieldType() {
+		FieldType ft = accountService
+				.getFieldType("8791fd99-efca-347c-eeb9-52988a95c453");
+		Assert.assertNotNull(ft);
+		Assert.assertFalse(ft instanceof Ghost);
+	}
 
 	@Test
 	public void loadAccount() {
@@ -77,6 +86,28 @@ public class AccountServiceTest {
 		Account account = accountService.getAccount("j2ee", preload);
 		List<AccountField> extraFields = account.getExtraFields();
 		Validate.notEmpty(extraFields);
-		Assert.assertFalse(extraFields instanceof Ghost);
+
+		AccountField af1 = extraFields.get(0);
+		Assert.assertTrue(af1.getType() instanceof Ghost);
+	}
+
+	@Test
+	public void preloadExtraFieldsWithType() {
+
+		PreloadFindMethod preloadFindMethod = new PreloadFindMethod(
+				"accountService", "getExtraFields", String.class);
+		PreloadFindMethod preloadFindMethodFieldType = new PreloadFindMethod(
+				"accountService", "getFieldType", String.class);
+
+		Preload preloadAccountType = new Preload(Account.class, "extraFields",
+				preloadFindMethod);
+		Preload preloadFieldType = new Preload(AccountField.class, "type",
+				preloadFindMethodFieldType);
+		Account account = accountService.getAccount("j2ee", preloadAccountType,
+				preloadFieldType);
+		List<AccountField> extraFields = account.getExtraFields();
+		Validate.notEmpty(extraFields);
+		AccountField af1 = extraFields.get(0);
+		Assert.assertFalse(af1.getType() instanceof Ghost);
 	}
 }

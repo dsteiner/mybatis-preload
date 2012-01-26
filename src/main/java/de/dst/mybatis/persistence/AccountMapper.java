@@ -4,6 +4,7 @@ import java.util.List;
 
 import de.dst.mybatis.domain.Account;
 import de.dst.mybatis.domain.AccountField;
+import de.dst.mybatis.domain.FieldType;
 import de.dst.mybatis.domain.Signon;
 
 public interface AccountMapper {
@@ -15,4 +16,6 @@ public interface AccountMapper {
 	List<AccountField> getAccountFieldsByAccountId(String refId);
 
 	Signon getSignonByById(String signonId);
+
+	FieldType getFieldType(String typeId);
 }

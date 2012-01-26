@@ -49,11 +49,10 @@ class PreloadAccessor {
 	 */
 	private final boolean finderMethodIsBulkLoading;
 
-	private final PreloadService serviceProvider;
+	private final PreloadService preloadService;
 
-	public PreloadAccessor(final Preload preload,
-			PreloadService serviceProvider) {
-		this.serviceProvider = serviceProvider;
+	public PreloadAccessor(final Preload preload, PreloadService serviceProvider) {
+		this.preloadService = serviceProvider;
 
 		PreloadFindMethod preloadFindMethod = preload.getPreloadFindMethod();
 		Object serviceInstance = serviceProvider
@@ -200,7 +199,7 @@ class PreloadAccessor {
 	 * @param proxyEntity
 	 * @return argument of finder
 	 */
-	private Object getFinderArg(final Object entity, final Object proxyEntity) {
+	protected Object getFinderArg(final Object entity, final Object proxyEntity) {
 
 		// CAN be either a 1:n relation or Id of the
 		// proxy was not set
@@ -237,10 +236,10 @@ class PreloadAccessor {
 	 *            proxied entity, i.e. only populated with ID.
 	 * @return ID value of proxied entity
 	 */
-	public Object getEntityId(final Object anyEntity) {
+	protected Object getEntityId(final Object anyEntity) {
 		if (anyEntity == null)
 			return null;
-		String anyEntityIdProperty = serviceProvider
+		String anyEntityIdProperty = preloadService
 				.getIdPropertyForEntityClass(anyEntity.getClass());
 		if (anyEntityIdProperty == null) {
 			return null;
@@ -249,12 +248,11 @@ class PreloadAccessor {
 	}
 
 	public static Object getPropertyFromEntity(final Object proxiedEntity,
-			String proxiedEntityIdProperty) {
+			String propertiyName) {
 		try {
-			return PropertyUtils.getProperty(proxiedEntity,
-					proxiedEntityIdProperty);
+			return PropertyUtils.getProperty(proxiedEntity, propertiyName);
 		} catch (Exception e) {
-			throw new RuntimeException("Property '" + proxiedEntityIdProperty
+			throw new RuntimeException("Property '" + propertiyName
 					+ "' not found in entity: " + proxiedEntity, e);
 		}
 	}
@@ -266,7 +264,7 @@ class PreloadAccessor {
 	 *            enclosing entity
 	 * @return property of entity, i.e. the proxied dependent entity
 	 */
-	public Object invokeGetter(final Object entity) {
+	protected Object invokeGetter(final Object entity) {
 
 		try {
 			return PropertyUtils.getProperty(entity, getEntityProperty());
@@ -419,9 +417,11 @@ class PreloadAccessor {
 
 		for (Object entity : entities) {
 			Object proxyEntity = invokeGetter(entity);
-			Object id = getEntityId(proxyEntity);
-			if (id != null && !alreadyLoadedEntities.containsKey(id)) {
-				iDs.add(id);
+			if (preloadService.isGhost(proxyEntity)) {
+				Object id = getEntityId(proxyEntity);
+				if (id != null && !alreadyLoadedEntities.containsKey(id)) {
+					iDs.add(id);
+				}
 			}
 		}
 		return iDs;

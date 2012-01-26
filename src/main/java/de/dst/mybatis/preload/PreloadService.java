@@ -6,4 +6,5 @@ public interface PreloadService {
 
 	String getIdPropertyForEntityClass(Class entityClass);
 
+	boolean isGhost(Object entity);
 }

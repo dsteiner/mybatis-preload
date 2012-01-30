@@ -20,6 +20,11 @@ public class PreloadFindMethod implements Serializable {
 	 */
 	private final String finderMethodName;
 
+	public PreloadFindMethod(final String finderServiceName,
+			final String finderMethodName) {
+		this(finderServiceName, finderMethodName, null);
+	}
+
 	/**
 	 * Optional attribute specifying the parameters of the desired finder
 	 * method. Only necessary if "finderMethodName" is overloaded.

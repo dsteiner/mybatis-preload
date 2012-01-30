@@ -69,13 +69,25 @@
 		WHERE accountId =
 		#{refId}
 	</select>
-	
+
 	<select id="getFieldType" parameterType="string" resultType="FieldTypeImpl">
 		select
-			id,
-			pattern
+		id,
+		pattern
 		from field_type
 		where id = #{id}
+	</select>
+
+	<select id="getFieldTypesByIds" resultType="FieldTypeImpl"
+		parameterType="list">
+		select
+		id,
+		pattern
+		from field_type
+		where id IN 
+<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+    #{item}
+   </foreach>
 	</select>
 
 </mapper>

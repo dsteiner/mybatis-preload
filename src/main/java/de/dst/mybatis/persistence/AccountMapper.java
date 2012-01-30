@@ -18,4 +18,6 @@ public interface AccountMapper {
 	Signon getSignonByById(String signonId);
 
 	FieldType getFieldType(String typeId);
+
+	List<FieldType> getFieldTypesByIds(List<String> idList);
 }

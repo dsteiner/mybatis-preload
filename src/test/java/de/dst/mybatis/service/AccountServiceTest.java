@@ -93,11 +93,25 @@ public class AccountServiceTest {
 
 	@Test
 	public void preloadExtraFieldsWithType() {
-
-		PreloadFindMethod preloadFindMethod = new PreloadFindMethod(
-				"accountService", "getExtraFields", String.class);
 		PreloadFindMethod preloadFindMethodFieldType = new PreloadFindMethod(
 				"accountService", "getFieldType", String.class);
+		doTestWithPreloadFinderMethod(preloadFindMethodFieldType);
+	}
+
+	@Test
+	public void preloadExtraFieldsWithTypeBulkLoadingFinder() {
+
+		PreloadFindMethod preloadFindMethodFieldType = new PreloadFindMethod(
+				"accountService", "getFieldTypesByIdList" /* , List.class */);
+		doTestWithPreloadFinderMethod(preloadFindMethodFieldType);
+	}
+
+	private void doTestWithPreloadFinderMethod(
+			PreloadFindMethod preloadFindMethodFieldType) {
+
+		/* since method name is unique -> no argument class is needed */
+		PreloadFindMethod preloadFindMethod = new PreloadFindMethod(
+				"accountService", "getExtraFields" /* , String.class */);
 
 		Preload preloadAccountType = new Preload(Account.class, "extraFields",
 				preloadFindMethod);

@@ -46,4 +46,7 @@ public class AccountServiceImpl implements AccountService {
 		return accountMapper.getFieldType(typeId);
 	}
 
+	public List<FieldType> getFieldTypesByIdList(List<String> idList) {
+		return accountMapper.getFieldTypesByIds(idList);
+	}
 }

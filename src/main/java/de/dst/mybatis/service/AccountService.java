@@ -10,13 +10,15 @@ import de.dst.mybatis.preload.Preload;
 
 public interface AccountService {
 
-	public Account getAccount(String username, Preload... preloads);
+	Account getAccount(String username, Preload... preloads);
 
-	public Signon getSignon(String id);
+	Signon getSignon(String id);
 
-	public Signon getSignonByUsername(String string);
+	Signon getSignonByUsername(String string);
 
-	public List<AccountField> getExtraFields(String refId);
+	List<AccountField> getExtraFields(String refId);
 
-	public FieldType getFieldType(String typeId);
+	FieldType getFieldType(String typeId);
+
+	List<FieldType> getFieldTypesByIdList(List<String> idList);
 }

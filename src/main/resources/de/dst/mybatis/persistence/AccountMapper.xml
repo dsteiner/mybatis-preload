@@ -14,7 +14,6 @@
 		<association property="signon" column="signonid" javaType="SignonGhost">
 			<id property="id" column="signonid" />
 		</association>
-
 	</resultMap>
 
 	<resultMap type="AccountField" id="accountFieldResult">
@@ -23,7 +22,6 @@
 		<association property="type" column="typeId" javaType="FieldTypeGhost">
 			<id property="id" column="typeId" />
 		</association>
-
 	</resultMap>
 
 	<select id="getAccountByUsername" resultMap="accountResult">
